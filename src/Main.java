@@ -1,59 +1,59 @@
-/**
- * @author <Samanvita>
- *
- */
+import javax.swing.*;
 
-import java.util.Scanner;
-
-class Main {
-    public static Scanner console = new Scanner(System.in);
+public class Main {
     public static void main(String[] args) {
-        Main main = new Main();
-        main.play();
+        SwingUtilities.invokeLater(Main::showMenu);
     }
 
-    /**
-     * Plays a series of TicTacToe games. This will get the players'
-     * names and continue to play games until they don't want
-     * to play anymore.
-     */
+    private static void showMenu() {
+        JFrame frame = new JFrame("Tic Tac Toe - Main Menu");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(400, 300);
+        frame.setLayout(null);
+        frame.setLocationRelativeTo(null);
 
-    public void play() {
-        System.out.println("Let's play TicTacToe!");
-        System.out.println("---------------------");
-        boolean playAgain = true;
+        JLabel title = new JLabel("Let's play Tic Tac Toe!", SwingConstants.CENTER);
+        title.setBounds(50, 30, 300, 30);
+        frame.add(title);
 
-        GameStats stats = new GameStats();
+        JButton pvpButton = new JButton("Player vs Player");
+        pvpButton.setBounds(100, 100, 200, 40);
+        frame.add(pvpButton);
 
-        while(playAgain) {
+        JButton aiButton = new JButton("Player vs Ticky (AI 🤖)");
+        aiButton.setBounds(100, 160, 200, 40);
+        frame.add(aiButton);
 
-            System.out.println("Enter Player 1's name: ");
-            String player1_name = console.nextLine();
-            System.out.println("Enter Player 2's name: ");
-            String player2_name = console.nextLine();
+        pvpButton.addActionListener(e -> { frame.dispose(); startGame(false); });
+        aiButton.addActionListener(e -> { frame.dispose(); startGame(true); });
 
-            System.out.println();
-            System.out.println(player1_name + " will be X, " + player2_name + " will be O. ");
-            System.out.println();
+        frame.setVisible(true);
+    }
 
-            Player player1 = new Player(player1_name, "X");
-            Player player2 = new Player(player2_name, "O");
+    private static void startGame(boolean vsAI) {
+        String player1Name;
+        do {
+            player1Name = JOptionPane.showInputDialog(null, "Enter Player 1's name:");
+        } while (player1Name == null || player1Name.trim().isEmpty());
+        Player player1 = new Player(player1Name.trim(), "X");
 
-            TicTacToeGame game = new TicTacToeGame(player1, player2, stats);
+        Player player2;
 
-            boolean game_over = game.startGame(console);
-
-            if (game_over) {
-                System.out.println();
-                System.out.print("Do you want to play again? (y/n): ");
-                String response = console.next();
-                console.nextLine();
-                playAgain = response.equals("y");
-
-            } else {
-                playAgain = false;
-                System.out.println("Thanks for playing!");
-            }
+        if (vsAI) {
+            player2 = new AIPlayer("Ticky 🤖", "O"); // ✅ String, not char
+            JOptionPane.showMessageDialog(null,
+                    "Meet Ticky the TicTacToe genius! (•‿•)\n" +
+                            player1.getName() + " will be X, Ticky will be O.");
+        } else {
+            String player2Name;
+            do {
+                player2Name = JOptionPane.showInputDialog(null, "Enter Player 2's name:");
+            } while (player2Name == null || player2Name.trim().isEmpty());
+            player2 = new Player(player2Name.trim(), "O");
+            JOptionPane.showMessageDialog(null,
+                    player1.getName() + " will be X, " + player2.getName() + " will be O.");
         }
+
+        new TicTacToeUI(player1, player2);
     }
 }

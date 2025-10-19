@@ -2,6 +2,7 @@
   <library name="lib">
     <CLASSES>
       <root url="file://$USER_HOME$/Downloads/javafx-sdk-25/lib" />
+      <root url="file://$USER_HOME$/Downloads/javafx-sdk-25/lib" />
     </CLASSES>
     <JAVADOC />
     <NATIVE>
@@ -19,6 +20,7 @@
       <root url="jar://$USER_HOME$/Downloads/javafx-sdk-25/src.zip!/jfx.incubator.input" />
       <root url="jar://$USER_HOME$/Downloads/javafx-sdk-25/src.zip!/jfx.incubator.richtext" />
     </SOURCES>
+    <jarDirectory url="file://$USER_HOME$/Downloads/javafx-sdk-25/lib" recursive="false" />
     <jarDirectory url="file://$USER_HOME$/Downloads/javafx-sdk-25/lib" recursive="false" />
   </library>
 </component>

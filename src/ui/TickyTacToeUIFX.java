@@ -335,7 +335,8 @@ public class TickyTacToeUIFX {
         waitingForAI = false; // Reset AI waiting flag
         updateStatus();
         tickyImage.setImage(new Image(getClass().getResourceAsStream("/peeringTicky.png")));
-        tickyImage.setTranslateY(-150); // Reset to normal Ticky position
+        tickyImage.setFitWidth(200);
+        tickyImage.setTranslateY(-231); // Reset to normal Ticky position
     }
 
     private void updateStatus() {

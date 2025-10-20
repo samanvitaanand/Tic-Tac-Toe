@@ -2,6 +2,7 @@ package ui;
 
 import ai.AIPlayer;
 import javafx.animation.PauseTransition;
+import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -66,21 +67,14 @@ public class TickyTacToeUIFX {
 
         GridPane grid = createBoard();
 
-        // Create a VBox to stack Ticky and board vertically
-        VBox gameArea = new VBox(-30); // Negative spacing to overlap Ticky with board
+        // Create a StackPane for proper layering and centering
+        StackPane gameArea = new StackPane();
         gameArea.setAlignment(Pos.CENTER);
 
-        // Ticky container - centered
-        HBox tickyContainer = new HBox();
-        tickyContainer.setAlignment(Pos.CENTER);
-        tickyContainer.getChildren().add(tickyImage);
+        // ADJUST THIS VALUE to move Ticky up/down (-150 shows more of Ticky above board)
+        tickyImage.setTranslateY(-231); // Change this number to adjust vertical position
 
-        // Grid container - centered
-        HBox gridContainer = new HBox();
-        gridContainer.setAlignment(Pos.CENTER);
-        gridContainer.getChildren().add(grid);
-
-        gameArea.getChildren().addAll(tickyContainer, gridContainer);
+        gameArea.getChildren().addAll(tickyImage, grid);
         root.setCenter(gameArea);
 
         // Homepage button only
@@ -248,22 +242,23 @@ public class TickyTacToeUIFX {
     private boolean checkGameOver() {
         Player winner = game.checkWinner();
         if (winner != null) {
+            winner.incrementScore();
+            stats.updateStats(winner, game.getPlayer1(), game.getPlayer2());
+            updateStatus();
+
             // Show excited face if AI wins
             if (winner instanceof AIPlayer) {
                 tickyImage.setImage(new Image(getClass().getResourceAsStream("/excitedTicky.png")));
                 tickyImage.setFitWidth(150);
-                tickyImage.setTranslateY(5);
+                tickyImage.setTranslateY(-220); // Adjust excited Ticky position
             }
 
             showResult(winner.getName() + " wins!");
-            winner.incrementScore();
-            stats.updateStats(winner, game.getPlayer1(), game.getPlayer2());
-            resetBoard();
             return true;
         } else if (game.isDraw()) {
-            showResult("It's a draw!");
             stats.incrementDraw();
-            resetBoard();
+            updateStatus();
+            showResult("It's a draw!");
             return true;
         }
         updateStatus();
@@ -271,16 +266,52 @@ public class TickyTacToeUIFX {
     }
 
     private void showResult(String msg) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setHeaderText(null);
-        alert.setContentText(msg);
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Game Over");
+            alert.setHeaderText(null);
+            alert.setContentText(msg);
 
-        // Style the alert
-        DialogPane dialogPane = alert.getDialogPane();
-        dialogPane.setStyle("-fx-background-color: linear-gradient(to bottom, #667eea, #764ba2);");
-        dialogPane.lookup(".content.label").setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
+            alert.setX(stage.getX() + (stage.getWidth() / 2) - 200); // Center horizontally
+            alert.setY(stage.getY() + (stage.getHeight() / 2) - 100);
 
-        alert.showAndWait();
+            // Style the alert
+            DialogPane dialogPane = alert.getDialogPane();
+            dialogPane.setStyle("-fx-background-color: linear-gradient(to bottom, #667eea, #764ba2);");
+            dialogPane.lookup(".content.label").setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-weight: bold;");
+
+            // Add custom buttons
+            ButtonType playAgainBtn = new ButtonType("Play Again", ButtonBar.ButtonData.OK_DONE);
+            ButtonType quitBtn = new ButtonType("Quit to Homepage", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+            alert.getButtonTypes().setAll(playAgainBtn, quitBtn);
+
+            // Style the buttons
+            alert.getDialogPane().lookupButton(playAgainBtn).setStyle(
+                    "-fx-background-color: rgba(255, 255, 255, 0.9); " +
+                            "-fx-text-fill: #667eea; " +
+                            "-fx-font-weight: bold; " +
+                            "-fx-background-radius: 15; " +
+                            "-fx-padding: 10 20;"
+            );
+
+            alert.getDialogPane().lookupButton(quitBtn).setStyle(
+                    "-fx-background-color: rgba(255, 255, 255, 0.3); " +
+                            "-fx-text-fill: white; " +
+                            "-fx-font-weight: bold; " +
+                            "-fx-background-radius: 15; " +
+                            "-fx-padding: 10 20;"
+            );
+
+            alert.showAndWait().ifPresent(response -> {
+                if (response == quitBtn) {
+                    TickyTacToeMenu menu = new TickyTacToeMenu(stage);
+                    stage.setScene(new Scene(menu.getRoot(), 500, 500));
+                } else if (response == playAgainBtn) {
+                    resetBoard();
+                }
+            });
+        });
     }
 
     private void switchPlayer() {
@@ -304,6 +335,7 @@ public class TickyTacToeUIFX {
         waitingForAI = false; // Reset AI waiting flag
         updateStatus();
         tickyImage.setImage(new Image(getClass().getResourceAsStream("/peeringTicky.png")));
+        tickyImage.setTranslateY(-150); // Reset to normal Ticky position
     }
 
     private void updateStatus() {
